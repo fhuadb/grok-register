@@ -49,19 +49,29 @@
             <input name="proxy" placeholder="例如 http://host:port">
           </label>
           <label>
+            <span>邮箱服务类型</span>
+            <small>接码服务类型：luckyous（推荐）、duckmail 或留空使用 generic 模式。</small>
+            <input name="temp_mail_provider" placeholder="luckyous">
+          </label>
+          <label>
             <span>邮箱 API Base</span>
-            <small>临时邮箱服务接口地址，既支持自定义 Temp Mail，也支持 DuckMail。</small>
-            <input name="temp_mail_api_base" placeholder="https://api.duckmail.sbs">
+            <small>接码服务接口地址。luckyous 默认为 https://mails.luckyous.com，也支持 DuckMail 等。</small>
+            <input name="temp_mail_api_base" placeholder="https://mails.luckyous.com">
+          </label>
+          <label>
+            <span>API Key / 管理口令</span>
+            <small>luckyous 填 luck_xxx API Key；DuckMail 可留空或填 dk_xxx；自托管 Temp Mail 填管理口令。</small>
+            <input name="temp_mail_admin_password" placeholder="luck_xxx / dk_xxx / admin password">
+          </label>
+          <label>
+            <span>LuckMail 项目编码</span>
+            <small>luckyous 接码服务的项目编码，x.ai 注册默认填 xai。</small>
+            <input name="luckyous_project_code" placeholder="xai">
           </label>
           <label>
             <span>邮箱域名</span>
-            <small>注册时实际使用的邮箱后缀。DuckMail 留空时会自动选公开域名。</small>
+            <small>DuckMail / generic 模式下注册时使用的邮箱后缀；luckyous 模式无需填写。</small>
             <input name="temp_mail_domain" placeholder="example.com">
-          </label>
-          <label>
-            <span>邮箱管理口令 / DuckMail API Key</span>
-            <small>自定义 Temp Mail 填管理口令；DuckMail 可留空或填 API Key 以使用私有域名。</small>
-            <input name="temp_mail_admin_password" placeholder="admin password / dk_xxx">
           </label>
           <label>
             <span>站点密码</span>
@@ -138,19 +148,29 @@
               <input name="proxy" placeholder="留空则用系统默认">
             </label>
             <label>
+              <span>邮箱服务类型覆盖</span>
+              <small>当前任务临时改接码服务类型时再填（如 luckyous / duckmail）。</small>
+              <input name="temp_mail_provider" placeholder="留空则用系统默认">
+            </label>
+            <label>
               <span>邮箱 API Base 覆盖</span>
-              <small>当前任务临时改用别的邮箱接口时再填，也支持 DuckMail。</small>
+              <small>当前任务临时改用别的接码服务接口时再填。</small>
               <input name="temp_mail_api_base" placeholder="留空则用系统默认">
             </label>
             <label>
-              <span>邮箱域名覆盖</span>
-              <small>当前任务临时改邮箱后缀时再填；DuckMail 留空会自动选域名。</small>
-              <input name="temp_mail_domain" placeholder="留空则用系统默认">
+              <span>API Key / 管理口令覆盖</span>
+              <small>当前任务临时改 API Key 或管理口令时再填。</small>
+              <input name="temp_mail_admin_password" placeholder="留空则用系统默认">
             </label>
             <label>
-              <span>邮箱管理口令 / DuckMail API Key 覆盖</span>
-              <small>当前任务临时改 Temp Mail 口令或 DuckMail API Key 时再填。</small>
-              <input name="temp_mail_admin_password" placeholder="留空则用系统默认">
+              <span>LuckMail 项目编码覆盖</span>
+              <small>当前任务临时改 luckyous 项目编码时再填。</small>
+              <input name="luckyous_project_code" placeholder="留空则用系统默认">
+            </label>
+            <label>
+              <span>邮箱域名覆盖</span>
+              <small>DuckMail / generic 模式下临时改邮箱后缀时再填。</small>
+              <input name="temp_mail_domain" placeholder="留空则用系统默认">
             </label>
             <label>
               <span>站点密码覆盖</span>
