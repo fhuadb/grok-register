@@ -383,7 +383,7 @@ def create_temp_email() -> Tuple[str, str, str]:
         try:
             return _create_luckyous_email()
         except Exception as e:
-            raise Exception(f"LuckMail 接码订单创建失败: {e}")
+            raise Exception(f"LuckMail 接码订单创建失败: {e}") from e
 
     if not TEMP_MAIL_API_BASE:
         raise Exception("temp_mail_api_base 未设置，无法创建临时邮箱")
@@ -392,7 +392,7 @@ def create_temp_email() -> Tuple[str, str, str]:
         try:
             return _create_duckmail_email()
         except Exception as e:
-            raise Exception(f"DuckMail 临时邮箱创建失败: {e}")
+            raise Exception(f"DuckMail 临时邮箱创建失败: {e}") from e
 
     if not TEMP_MAIL_ADMIN_PASSWORD:
         raise Exception("temp_mail_admin_password 未设置，无法创建临时邮箱")
