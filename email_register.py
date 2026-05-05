@@ -47,6 +47,7 @@ TEMP_MAIL_DOMAIN = str(_conf.get("temp_mail_domain") or _conf.get("duckmail_doma
 TEMP_MAIL_SITE_PASSWORD = str(_conf.get("temp_mail_site_password", ""))
 PROXY = str(_conf.get("proxy", ""))
 TEMP_MAIL_PROVIDER = str(_conf.get("temp_mail_provider") or "").strip().lower()
+LUCKYOUS_PROJECT_CODE = str(_conf.get("luckyous_project_code") or "").strip()
 
 # ============================================================
 # 适配层：为 DrissionPage_example.py 提供简单接口
@@ -87,16 +88,25 @@ def get_oai_code(dev_token: str, email: str, timeout: int = 30) -> Optional[str]
 
 
 def _detect_mail_provider(api_base: str) -> str:
+    if TEMP_MAIL_PROVIDER == "luckyous":
+        return "luckyous"
     if TEMP_MAIL_PROVIDER in {"duckmail", "temp-mail", "temp_mail", "generic"}:
         return "duckmail" if TEMP_MAIL_PROVIDER == "duckmail" else "generic"
     hostname = (urlparse(api_base).hostname or "").lower()
     if "duckmail" in hostname:
         return "duckmail"
+    if "luckyous" in hostname:
+        return "luckyous"
     return "generic"
 
 
 def _provider_label() -> str:
-    return "DuckMail" if _detect_mail_provider(TEMP_MAIL_API_BASE) == "duckmail" else "Temp Mail"
+    provider = _detect_mail_provider(TEMP_MAIL_API_BASE)
+    if provider == "duckmail":
+        return "DuckMail"
+    if provider == "luckyous":
+        return "LuckMail"
+    return "Temp Mail"
 
 def _create_session():
     """创建请求会话（优先 curl_cffi）。"""
@@ -278,17 +288,111 @@ def _create_duckmail_email() -> Tuple[str, str, str]:
     raise Exception(f"创建 DuckMail 邮箱失败，重试后仍冲突: {last_error}")
 
 
+def _build_luckyous_headers() -> Dict[str, str]:
+    api_key = TEMP_MAIL_ADMIN_PASSWORD
+    return {
+        "X-API-Key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+
+def _create_luckyous_email() -> Tuple[str, str, str]:
+    api_base = (TEMP_MAIL_API_BASE or "https://mails.luckyous.com").rstrip("/")
+    api_key = TEMP_MAIL_ADMIN_PASSWORD
+    project_code = LUCKYOUS_PROJECT_CODE
+
+    if not api_key:
+        raise Exception("LuckMail 未配置 API Key（temp_mail_admin_password）")
+    if not project_code:
+        raise Exception("LuckMail 未配置项目编码（luckyous_project_code）")
+
+    session, use_cffi = _create_session()
+    headers = _build_luckyous_headers()
+
+    res = _do_request(
+        session,
+        use_cffi,
+        "post",
+        f"{api_base}/api/v1/openapi/order/create",
+        json={"project_code": project_code},
+        headers=headers,
+        timeout=20,
+    )
+    if res.status_code != 200:
+        raise Exception(f"LuckMail 创建接码订单失败: {res.status_code} - {res.text[:200]}")
+
+    data = res.json()
+    if not isinstance(data, dict):
+        raise Exception(f"LuckMail 接口返回格式异常: {data}")
+
+    if data.get("code", -1) != 0:
+        raise Exception(f"LuckMail 接口错误: {data.get('message', 'Unknown error')}")
+
+    resp_data = data.get("data") or {}
+    email = str(resp_data.get("email_address") or "").strip()
+    order_no = str(resp_data.get("order_no") or "").strip()
+
+    if not email or not order_no:
+        raise Exception(f"LuckMail 接口返回缺少 email_address/order_no: {resp_data}")
+
+    print(f"[*] LuckMail 接码订单创建成功: {email} (订单号: {order_no})")
+    return email, "", order_no
+
+
+def _wait_luckyous_code(order_no: str, timeout: int = 120) -> Optional[str]:
+    api_base = (TEMP_MAIL_API_BASE or "https://mails.luckyous.com").rstrip("/")
+    session, use_cffi = _create_session()
+    headers = _build_luckyous_headers()
+    start = time.time()
+
+    while time.time() - start < timeout:
+        try:
+            res = _do_request(
+                session,
+                use_cffi,
+                "get",
+                f"{api_base}/api/v1/openapi/order/{order_no}/code",
+                headers=headers,
+                timeout=20,
+            )
+            if res.status_code == 200:
+                data = res.json()
+                if isinstance(data, dict) and data.get("code", -1) == 0:
+                    resp_data = data.get("data") or {}
+                    status = str(resp_data.get("status", "")).lower()
+                    if status == "success":
+                        code = str(resp_data.get("verification_code") or "").strip()
+                        if code:
+                            print(f"[*] LuckMail 提取到验证码: {code}")
+                            return code
+                    elif status in ("failed", "timeout", "cancelled"):
+                        print(f"[!] LuckMail 接码订单终止: {status}")
+                        return None
+        except Exception:
+            pass
+        time.sleep(3)
+    return None
+
+
 def create_temp_email() -> Tuple[str, str, str]:
     """创建临时邮箱地址，返回 (email, password, mail_token)。"""
+    provider = _detect_mail_provider(TEMP_MAIL_API_BASE)
+
+    if provider == "luckyous":
+        try:
+            return _create_luckyous_email()
+        except Exception as e:
+            raise Exception(f"LuckMail 接码订单创建失败: {e}") from e
+
     if not TEMP_MAIL_API_BASE:
         raise Exception("temp_mail_api_base 未设置，无法创建临时邮箱")
 
-    provider = _detect_mail_provider(TEMP_MAIL_API_BASE)
     if provider == "duckmail":
         try:
             return _create_duckmail_email()
         except Exception as e:
-            raise Exception(f"DuckMail 临时邮箱创建失败: {e}")
+            raise Exception(f"DuckMail 临时邮箱创建失败: {e}") from e
 
     if not TEMP_MAIL_ADMIN_PASSWORD:
         raise Exception("temp_mail_admin_password 未设置，无法创建临时邮箱")
@@ -458,6 +562,9 @@ def fetch_email_detail(mail_token: str, msg_id: str) -> Optional[Dict[str, Any]]
 
 def wait_for_verification_code(mail_token: str, timeout: int = 120) -> Optional[str]:
     """轮询临时邮箱，等待验证码邮件。"""
+    if _detect_mail_provider(TEMP_MAIL_API_BASE) == "luckyous":
+        return _wait_luckyous_code(mail_token, timeout)
+
     start = time.time()
     seen_ids = set()
 

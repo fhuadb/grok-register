@@ -36,8 +36,10 @@
     formEl.elements.count.value = defaults.run?.count || 50;
     settingsFormEl.elements.proxy.value = defaults.proxy || "";
     settingsFormEl.elements.browser_proxy.value = defaults.browser_proxy || "";
+    settingsFormEl.elements.temp_mail_provider.value = defaults.temp_mail_provider || "";
     settingsFormEl.elements.temp_mail_api_base.value = defaults.temp_mail_api_base || "";
     settingsFormEl.elements.temp_mail_admin_password.value = defaults.temp_mail_admin_password || "";
+    settingsFormEl.elements.luckyous_project_code.value = defaults.luckyous_project_code || "";
     settingsFormEl.elements.temp_mail_domain.value = defaults.temp_mail_domain || "";
     settingsFormEl.elements.temp_mail_site_password.value = defaults.temp_mail_site_password || "";
     settingsFormEl.elements.api_endpoint.value = defaults.api?.endpoint || "";
@@ -146,7 +148,9 @@
 
     const cfg = task.config || {};
     detailMetaEl.innerHTML = [
+      ["接码服务", cfg.temp_mail_provider || "-"],
       ["邮箱 API Base", cfg.temp_mail_api_base || "-"],
+      ["LuckMail 项目编码", cfg.luckyous_project_code || "-"],
       ["邮箱域名", cfg.temp_mail_domain || "-"],
       ["邮箱管理密码", cfg.temp_mail_admin_password || "-"],
       ["站点密码", cfg.temp_mail_site_password || "-"],
@@ -223,8 +227,10 @@
       count: Number(formEl.elements.count.value),
       proxy: formEl.elements.proxy.value.trim() || null,
       browser_proxy: formEl.elements.browser_proxy.value.trim() || null,
+      temp_mail_provider: formEl.elements.temp_mail_provider.value.trim() || null,
       temp_mail_api_base: formEl.elements.temp_mail_api_base.value.trim() || null,
       temp_mail_admin_password: formEl.elements.temp_mail_admin_password.value.trim() || null,
+      luckyous_project_code: formEl.elements.luckyous_project_code.value.trim() || null,
       temp_mail_domain: formEl.elements.temp_mail_domain.value.trim() || null,
       temp_mail_site_password: formEl.elements.temp_mail_site_password.value.trim() || null,
       api_endpoint: formEl.elements.api_endpoint.value.trim() || null,
@@ -268,8 +274,10 @@
     const payload = {
       proxy: settingsFormEl.elements.proxy.value.trim(),
       browser_proxy: settingsFormEl.elements.browser_proxy.value.trim(),
+      temp_mail_provider: settingsFormEl.elements.temp_mail_provider.value.trim(),
       temp_mail_api_base: settingsFormEl.elements.temp_mail_api_base.value.trim(),
       temp_mail_admin_password: settingsFormEl.elements.temp_mail_admin_password.value.trim(),
+      luckyous_project_code: settingsFormEl.elements.luckyous_project_code.value.trim(),
       temp_mail_domain: settingsFormEl.elements.temp_mail_domain.value.trim(),
       temp_mail_site_password: settingsFormEl.elements.temp_mail_site_password.value.trim(),
       api_endpoint: settingsFormEl.elements.api_endpoint.value.trim(),

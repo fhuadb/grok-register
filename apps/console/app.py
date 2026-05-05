@@ -165,10 +165,12 @@ def load_source_defaults() -> dict[str, Any]:
     env_map = {
         "proxy": "GROK_REGISTER_DEFAULT_PROXY",
         "browser_proxy": "GROK_REGISTER_DEFAULT_BROWSER_PROXY",
+        "temp_mail_provider": "GROK_REGISTER_DEFAULT_TEMP_MAIL_PROVIDER",
         "temp_mail_api_base": "GROK_REGISTER_DEFAULT_TEMP_MAIL_API_BASE",
         "temp_mail_admin_password": "GROK_REGISTER_DEFAULT_TEMP_MAIL_ADMIN_PASSWORD",
         "temp_mail_domain": "GROK_REGISTER_DEFAULT_TEMP_MAIL_DOMAIN",
         "temp_mail_site_password": "GROK_REGISTER_DEFAULT_TEMP_MAIL_SITE_PASSWORD",
+        "luckyous_project_code": "GROK_REGISTER_DEFAULT_LUCKYOUS_PROJECT_CODE",
     }
     for key, env_name in env_map.items():
         value = os.getenv(env_name)
@@ -421,10 +423,12 @@ class TaskCreate(BaseModel):
     count: int = Field(50, ge=1, le=5000)
     proxy: str | None = None
     browser_proxy: str | None = None
+    temp_mail_provider: str | None = None
     temp_mail_api_base: str | None = None
     temp_mail_admin_password: str | None = None
     temp_mail_domain: str | None = None
     temp_mail_site_password: str | None = None
+    luckyous_project_code: str | None = None
     api_endpoint: str | None = None
     api_token: str | None = None
     api_append: bool | None = None
@@ -434,10 +438,12 @@ class TaskCreate(BaseModel):
 class SystemSettings(BaseModel):
     proxy: str = ""
     browser_proxy: str = ""
+    temp_mail_provider: str = ""
     temp_mail_api_base: str = ""
     temp_mail_admin_password: str = ""
     temp_mail_domain: str = ""
     temp_mail_site_password: str = ""
+    luckyous_project_code: str = ""
     api_endpoint: str = ""
     api_token: str = ""
     api_append: bool = True
@@ -481,7 +487,7 @@ def merged_defaults() -> dict[str, Any]:
         base["proxy"] = str(saved.get("proxy", ""))
     if saved.get("browser_proxy") is not None:
         base["browser_proxy"] = str(saved.get("browser_proxy", ""))
-    for key in ("temp_mail_api_base", "temp_mail_admin_password", "temp_mail_domain", "temp_mail_site_password"):
+    for key in ("temp_mail_provider", "temp_mail_api_base", "temp_mail_admin_password", "temp_mail_domain", "temp_mail_site_password", "luckyous_project_code"):
         if key in saved:
             base[key] = str(saved.get(key, ""))
     api_base = dict(base.get("api") or {})
@@ -502,10 +508,12 @@ def build_task_config(payload: TaskCreate) -> dict[str, Any]:
         "run": {"count": int(payload.count)},
         "proxy": defaults.get("proxy", "") if payload.proxy is None else payload.proxy.strip(),
         "browser_proxy": defaults.get("browser_proxy", "") if payload.browser_proxy is None else payload.browser_proxy.strip(),
+        "temp_mail_provider": defaults.get("temp_mail_provider", "") if payload.temp_mail_provider is None else payload.temp_mail_provider.strip(),
         "temp_mail_api_base": defaults.get("temp_mail_api_base", "") if payload.temp_mail_api_base is None else payload.temp_mail_api_base.strip(),
         "temp_mail_admin_password": defaults.get("temp_mail_admin_password", "") if payload.temp_mail_admin_password is None else payload.temp_mail_admin_password.strip(),
         "temp_mail_domain": defaults.get("temp_mail_domain", "") if payload.temp_mail_domain is None else payload.temp_mail_domain.strip(),
         "temp_mail_site_password": defaults.get("temp_mail_site_password", "") if payload.temp_mail_site_password is None else payload.temp_mail_site_password.strip(),
+        "luckyous_project_code": defaults.get("luckyous_project_code", "") if payload.luckyous_project_code is None else payload.luckyous_project_code.strip(),
         "api": {
             "endpoint": api_defaults.get("endpoint", "") if payload.api_endpoint is None else payload.api_endpoint.strip(),
             "token": api_defaults.get("token", "") if payload.api_token is None else payload.api_token.strip(),
